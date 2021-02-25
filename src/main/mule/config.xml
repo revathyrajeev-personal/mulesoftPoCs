@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="quetion4.1" doc:id="6ce2eca4-50eb-4402-93bf-084bfa64032d" >
+		<http:listener doc:name="Listener" doc:id="f9a6a297-fb51-4616-afa8-9ecc477c5e87" config-ref="mulesoftcodechallenge-httpListenerConfig" path="/concatenate"/>
+		<ee:transform doc:name="Transform Message" doc:id="3cd590fd-beba-44e7-9d35-b2de9c89af9f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+
+output application/json
+var input_1 = {"employee":[{"id":"A007","first_name":"Jan","last_name":"Doe"},{"id":"A008","first_name":"Ron","last_name":"David"},{"id":"A009","first_name":"Jane","last_name":"Kane"},{"id":"A010","first_name":"Marsh","last_name":"Megan"},{"id":"A011","first_name":"Kelly","last_name":"Mitch"},{"id":"A012","first_name":"Chris","last_name":"Vaste"}]}
+var input_2 = {"scoreBoard":[{"id":"A007","subjects":["Maths","English","Arts","Drawimgs"],"score":[80,75,89,100]},{"id":"A008","subjects":["Maths","English","Arts","Drawimgs"],"score":[70,85,69,90]},{"id":"A021","subjects":["Maths","English","Arts","Drawimgs"],"score":[90,87,77,95]}]}
+---
+"certificate":
+join(input_1.employee, input_2.scoreBoard, (emp) -> emp.id, (scoreBoard) -> scoreBoard.id) 
+ map (item, index) -> 
+ 
+ {
+ 	"id": item.l.id,
+ 	"firstName": item.l.first_name,
+	"LastName": item.l.last_name,
+	"MarksBySubjectWise": {(item.r.subjects map '$': item.r.score[$$])}
+	
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="convertCamelCase" doc:id="b3695613-0e4a-4c8c-8d39-68fe4fbb8d08" >
+		<http:listener doc:name="Listener" doc:id="e21702a9-2b53-477e-b752-3a9bfaae5307" config-ref="mulesoftcodechallenge-httpListenerConfig" path="/callJavaMethod"/>
+		<ee:transform doc:name="Transform Message" doc:id="282453b8-da7a-4135-b554-6002c5ddde66" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import java!mulesoftcodechallenge::ConvertCamelCase
+output application/json
+---
+{data: ConvertCamelCase::convertToCamelCase("convert me to camel case")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="DataweaveFlow" doc:id="e9a9c7b0-ac12-4c6f-93ad-2d37e9330bea" >
+		<http:listener doc:name="Listener" doc:id="9ef933bd-3c56-4eef-a2ba-4b7e1930d5a7" config-ref="mulesoftcodechallenge-httpListenerConfig" path="/callPostEmployee"/>
+		<ee:transform doc:name="Transform Message" doc:id="58e0f448-20e7-4b62-a79e-d54681884555" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+data: lookup("post:\employee:application\json:mulesoftcodechallenge-config",
+{"employee":{"id":"A007","first_name":"Jan","last_name":"Doe"}})
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="captureOutput" ><![CDATA[%dw 2.0
+output application/json
+---
+ lookup("post:\employee:application\json:mulesoftcodechallenge-config",
+{"employee":{"id":"A007","first_name":"Jan","last_name":"Doe"}})
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="4c7f6a7f-a640-4037-97a4-f07aa11ac78b" message="#[vars.captureOutput]"/>
+	</flow>
+	<flow name="question5" doc:id="25995c4c-96cd-415d-8c01-e2bbbefec852" >
+		<http:listener doc:name="Listener" doc:id="0ede4306-1f72-48ee-9231-984a3d5366f9" config-ref="mulesoftcodechallenge-httpListenerConfig" path="/printCount/{N}"/>
+		<set-payload value="#[output application/json --- 1 to message.attributes.uriParams.N]" doc:name="Set Payload" doc:id="461158e6-b89c-4dee-a641-20e8f24d4df6" />
+	</flow>
+	<flow name="question4.2" doc:id="75d964c3-ea93-4c0a-a37b-4cebe0b8e1f8" >
+		<http:listener doc:name="Listener" doc:id="f17a43cb-f1ec-4b52-a564-a56b49401133" config-ref="mulesoftcodechallenge-httpListenerConfig" path="/concatenate-left-join" />
+		<ee:transform doc:name="Transform Message" doc:id="c649acff-c981-4931-a07e-ca7768604635" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+
+output application/json
+var input_1 = {"employee":[{"id":"A007","first_name":"Jan","last_name":"Doe"},{"id":"A008","first_name":"Ron","last_name":"David"},{"id":"A009","first_name":"Jane","last_name":"Kane"},{"id":"A010","first_name":"Marsh","last_name":"Megan"},{"id":"A011","first_name":"Kelly","last_name":"Mitch"},{"id":"A012","first_name":"Chris","last_name":"Vaste"}]}
+var input_2 = {"scoreBoard":[{"id":"A007","subjects":["Maths","English","Arts","Drawimgs"],"score":[80,75,89,100]},{"id":"A008","subjects":["Maths","English","Arts","Drawimgs"],"score":[70,85,69,90]},{"id":"A021","subjects":["Maths","English","Arts","Drawimgs"],"score":[90,87,77,95]}]}
+---
+"certificate":
+leftJoin(input_1.employee, input_2.scoreBoard, (emp) -> emp.id, (scoreBoard) -> scoreBoard.id) 
+ map (item, index) -> 
+ 
+ {
+ 	"id": item.l.id,
+ 	"firstName": item.l.first_name,
+	"LastName": item.l.last_name,
+	"MarksBySubjectWise": {(item.r.subjects map '$': item.r.score[$$])}
+	
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

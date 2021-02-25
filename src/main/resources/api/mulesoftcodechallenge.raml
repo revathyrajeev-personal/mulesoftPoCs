@@ -1,0 +1,17 @@
+#%RAML 1.0
+title: MulesoftCodeChallenge
+/employee:
+  post:
+        body:
+          application/json:
+            example:
+              {
+                "employee":{"id":"A007","first_name":"Jan","last_name":"Doe"}
+              }
+        responses:
+          201:
+            body:
+              application/json:
+                examples:
+                  message: "Jan Doe was created successfully. (Employee ID : A007)"
+      
